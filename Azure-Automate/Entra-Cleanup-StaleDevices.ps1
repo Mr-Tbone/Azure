@@ -146,7 +146,7 @@ catch{write-Error "$(Get-Date -Format 'yyyy-MM-dd'),$(Get-Date -format 'HH:mm:ss
 foreach ($device in $pendingdevices) {
     Write-Output "Device $($device.DisplayName) is pending to be disabled"
     if ($TestMode -eq $False) {
-        try{Update-MgDevice -Id $device.Id -AccountEnabled $False
+        try{Update-MgDevice -DeviceId $device.Id -AccountEnabled:$False
             write-verbose "$(Get-Date -Format 'yyyy-MM-dd'),$(Get-Date -format 'HH:mm:ss'),Success to disable Device $($device.DisplayName)"}
         catch{write-Error "$(Get-Date -Format 'yyyy-MM-dd'),$(Get-Date -format 'HH:mm:ss'),Failed to disable Device $($device.DisplayName) with error: $_"}
     }
@@ -156,20 +156,12 @@ foreach ($device in $pendingdevices) {
 foreach ($device in $staledevices) {
     Write-Output "Device $($device.DisplayName) is stale and will be removed"
     if ($TestMode -eq $False) {
-        try{Remove-MgDevice -Id $device.Id
+        try{Remove-MgDevice -DeviceId $device.Id
             write-verbose "$(Get-Date -Format 'yyyy-MM-dd'),$(Get-Date -format 'HH:mm:ss'),Success to remove Device $($device.DisplayName)"}
         catch{write-Error "$(Get-Date -Format 'yyyy-MM-dd'),$(Get-Date -format 'HH:mm:ss'),Failed to remove Device $($device.DisplayName) with error: $_"}
     }
 }
 
-$graphApiVersion = "beta"
-$Resource = "devices"
-$filter = "?`$filter=ApproximateLastSignInDateTime le $($deleteDate)"
-$results=@()
-$uri = "https://graph.microsoft.com////$graphApiVersion/$($Resource)$($filter)"
-$result=Invoke-RestMethod -Uri $uri -Headers $MgGraphAccessToken -Method Get
-$results+=$result
-#disconnect-mggraph | out-null
 [datetime]$scriptEndTime    = Get-Date
 write-Output "Script execution time: $(($scriptEndTime-$scriptStartTime).ToString('hh\:mm\:ss'))"
 $VerbosePreference = "SilentlyContinue"
